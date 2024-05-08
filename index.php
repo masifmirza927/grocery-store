@@ -16,12 +16,10 @@
     <?php
         // select categories
             $cats = getCategories($con);
-            $cats2 = getCategories($con);
 
         // get products
         $products = getProducts($con);
-        $products2 = getProducts($con);
-        //pp($products);
+
 
     ?>
     
@@ -38,7 +36,7 @@
                                 </div>
                             </div>
                         <?php }
-                       // mysql_data_seek($cats, 0);
+                            mysqli_data_seek($cats, 0);
                         ?>
 <!--                    <div class="col-lg-3">-->
 <!--                        <div class="categories__item set-bg" data-setbg="img/categories/cat-2.jpg">-->
@@ -78,7 +76,7 @@
                         <ul>
                             <li class="active" data-filter="*">All</li>
                             <?php //print_r(mysqli_fetch_assoc($cats)) ?>
-                            <?php while ($ct = mysqli_fetch_assoc($cats2)) { ?>
+                            <?php while ($ct = mysqli_fetch_assoc($cats)) { ?>
                                 <li data-filter=".<?=$ct['category']?>"><?php echo $ct['category']?></li>
                             <?php }
                             //mysql_data_seek($result_work_id, 0);
@@ -94,7 +92,7 @@
             </div>
             <div class="row featured__filter">
 
-                    <?php while($pt = mysqli_fetch_assoc($products2)) { ?>
+                    <?php while($pt = mysqli_fetch_assoc($products)) { ?>
                         <div class="col-lg-3 col-md-4 col-sm-6 mix <?php $ptc = getCategroyById($con,$pt['category_id']); echo $ptc['category'] ?>  fresh-meat">
                             <div class="featured__item">
                                 <div class="featured__item__pic set-bg" data-setbg="<?php echo getImageUrl("product", $pt['image']) ?>">
@@ -110,7 +108,9 @@
                                 </div>
                             </div>
                         </div>
-                    <?php } ?>
+                    <?php }
+                    mysqli_data_seek($products, 0);
+                    ?>
 
 <!--                <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fastfood">-->
 <!--                    <div class="featured__item">-->
