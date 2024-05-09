@@ -85,11 +85,11 @@
                         <div class="product__details__quantity">
                             <div class="quantity">
                                 <div class="pro-qty">
-                                    <input type="text" value="1">
+                                    <input type="text" value="1" id="product-qty">
                                 </div>
                             </div>
                         </div>
-                        <a href="#" class="primary-btn">ADD TO CARD</a>
+                        <a href="#" class="primary-btn" id="addToCart">ADD TO CARD</a>
                         <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
                         <ul>
                             <li><b>Availability</b> <span>In Stock</span></li>
@@ -274,7 +274,24 @@
     <!-- javascript links include -->
     <?php require_once("./includes/javascript-links.php") ?>
 
+<script>
+    $(document).ready(function () {
+        $("#addToCart").on("click", function (e){
+            e.preventDefault();
+            let pid = "<?php echo $pid ?>";
+            let qty = $("#product-qty").val();
+            $.ajax({
+                url: "add-to-cart.php",
+                type: "POST",
+                data: {pid, qty},
+                success: function (response) {
+                    console.log(response)
+                }
+            })
 
+        })
+    })
+</script>
 </body>
 
 </html>
