@@ -41,6 +41,7 @@
             return $result;
     }
 
+
     function getImageUrl($folder, $image) {
         return "admin/images/$folder/$image";
     }
@@ -54,6 +55,14 @@
         $order = mysqli_fetch_assoc($result);
         return $order;
     }
+    // get order all items by order_id
+    function getOrderItemsByOrderId($con, $order_id) {
+        $sql = "SELECT * FROM order_items WHERE order_id = $order_id";
+        $result = mysqli_query($con, $sql);
+        return mysqli_fetch_all($result);
+    }
+
+
 
     // create new order
     function createOrder($con, $customer_id, $product, $qty)
@@ -77,16 +86,43 @@
 
     }
 
-    // update order with products
+
+    // get order item/product by id
+    function getOrderItemById($con, $order_id, $pid) {
+        $sql = "SELECT * FROM order_items WHERE product_id = $pid AND order_id = $order_id ";
+        $result = mysqli_query($con, $sql);
+        $order_item = mysqli_fetch_assoc($result);
+        return $order_item;
+    }
+
+
+
+// update order with products
     function updateOrder($con, $order, $product, $qty)
     {
         $order_id = $order['id'];
         $pid = $product['id'];
         $uprice = $product['unit_price'];
-        $total_price = $product['unit_price'] * $qty;
 
-        $item_sql = "INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `unit_price`, `quantity`, `total_price`) VALUES (NULL, $order_id, $pid, $uprice, $qty, $total_price) ";
-        mysqli_query($con, $item_sql);
+        // check if product is already in cart then update its quantity.
+        $item = getOrderItemById($con, $order_id, $pid);
+        if(empty($item)) {
+            // inserting new item in order
+            $total_price = $product['unit_price'] * $qty;
+            $item_sql = "INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `unit_price`, `quantity`, `total_price`) VALUES (NULL, $order_id, $pid, $uprice, $qty, $total_price) ";
+            mysqli_query($con, $item_sql);
+
+        } else {
+            // updating existing item quantity
+            $qty_new = $qty + $item['quantity'];
+            $total_price_new = $product['unit_price'] * $qty_new;
+
+            $usql = "UPDATE `order_items` SET `quantity` = $qty_new, `total_price`= $total_price_new WHERE `order_items`.`product_id` = $pid;";
+            mysqli_query($con, $usql);
+        }
+
 
         return $order_id;
     }
+
+    //

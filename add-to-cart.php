@@ -19,12 +19,15 @@
         // if logged in customer don't have pending or means it's his new order
         if(empty($order)) {
             // insert new order details
-            echo createOrder($con, $customer_id, $product, $qty);
+            createOrder($con, $customer_id, $product, $qty);
         }
 
         // if logged in customer has pending/active order
         if(!empty($order)) {
-            echo updateOrder($con, $order, $product, $qty);
+            updateOrder($con, $order, $product, $qty);
         }
 
+
+        $order_items = getOrderItemsByOrderId($con, $order['id']);
+        echo count($order_items);
     }

@@ -285,7 +285,14 @@
                 type: "POST",
                 data: {pid, qty},
                 success: function (response) {
-                    console.log(response)
+                    $("#cartItemsCountDesk").html(response);
+                    Swal.fire({
+                        position: "top-center",
+                        icon: "success",
+                        title: "Items is successfully added to cart",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                 }
             })
 
