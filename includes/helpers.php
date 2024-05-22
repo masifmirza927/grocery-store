@@ -125,4 +125,54 @@
         return $order_id;
     }
 
-    //
+
+    // get cart items
+    function getCart($con) {
+
+        // get active order by logged in user
+        $user_id = 1;
+        $sql = "SELECT * FROM orders WHERE customer_id = $user_id AND status = 'pending' ";
+        $result = mysqli_query($con, $sql);
+        $order = mysqli_fetch_assoc($result);
+        $data = null;
+        if(!empty($order)) {
+            // get order items
+            $sql_items = "SELECT order_items.*, products.name, products.image 
+                            FROM order_items 
+                            LEFT JOIN products ON order_items.product_id = products.id   
+                            WHERE order_items.order_id = $order[id]";
+
+            $result_items = mysqli_query($con, $sql_items);
+            //$order_items = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+            //pp($order_items);
+
+            $data = [
+                'order' => $order,
+                'items' => $result_items
+            ];
+            return $data;
+        }
+        return $data;
+    }
+
+    // remove item from cart
+    function removeItem($con, $id) {
+        // remove item from order_items table
+        $sql = "DELETE FROM order_items WHERE `order_items`.`id` = $id";
+        mysqli_query($con, $sql);
+        return true;
+    }
+
+    function getCartItemsCount($con) {
+        $user_id = 1;
+        $sql = "SELECT * FROM orders WHERE customer_id = $user_id AND status = 'pending' ";
+        $result = mysqli_query($con, $sql);
+        $order = mysqli_fetch_assoc($result);
+        if(!empty($order)) {
+            // get order items
+            $sql_items = "SELECT count(*) as total_items FROM order_items  WHERE order_items.order_id = $order[id]";
+            $result_items = mysqli_query($con, $sql_items);
+            $items_count = mysqli_fetch_assoc($result_items);
+            return $items_count;
+        }
+    }

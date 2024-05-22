@@ -11,9 +11,13 @@
 </head>
 
 <body>
-   
+
     <!-- header-section include -->
     <?php require_once("./includes/header.php") ?>
+
+    <?php
+    $data = getCart($con);
+    ?>
 
     <!-- Breadcrumb Section Begin -->
     <section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
@@ -50,72 +54,35 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="shoping__cart__item">
-                                        <img src="img/cart/cart-1.jpg" alt="">
-                                        <h5>Vegetable’s Package</h5>
-                                    </td>
-                                    <td class="shoping__cart__price">
-                                        $55.00
-                                    </td>
-                                    <td class="shoping__cart__quantity">
-                                        <div class="quantity">
-                                            <div class="pro-qty">
-                                                <input type="text" value="1">
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="shoping__cart__total">
-                                        $110.00
-                                    </td>
-                                    <td class="shoping__cart__item__close">
-                                        <span class="icon_close"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="shoping__cart__item">
-                                        <img src="img/cart/cart-2.jpg" alt="">
-                                        <h5>Fresh Garden Vegetable</h5>
-                                    </td>
-                                    <td class="shoping__cart__price">
-                                        $39.00
-                                    </td>
-                                    <td class="shoping__cart__quantity">
-                                        <div class="quantity">
-                                            <div class="pro-qty">
-                                                <input type="text" value="1">
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="shoping__cart__total">
-                                        $39.99
-                                    </td>
-                                    <td class="shoping__cart__item__close">
-                                        <span class="icon_close"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="shoping__cart__item">
-                                        <img src="img/cart/cart-3.jpg" alt="">
-                                        <h5>Organic Bananas</h5>
-                                    </td>
-                                    <td class="shoping__cart__price">
-                                        $69.00
-                                    </td>
-                                    <td class="shoping__cart__quantity">
-                                        <div class="quantity">
-                                            <div class="pro-qty">
-                                                <input type="text" value="1">
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="shoping__cart__total">
-                                        $69.99
-                                    </td>
-                                    <td class="shoping__cart__item__close">
-                                        <span class="icon_close"></span>
-                                    </td>
-                                </tr>
+                                <?php $grand_total = 0 ?>
+                                <?php if (!empty($data)) { ?>
+                                    <?php while ($item = mysqli_fetch_assoc($data['items'])) { ?>
+                                        <?php $grand_total += $item['total_price']  ?>
+                                        <tr>
+                                            <td class="shoping__cart__item">
+                                                <img src="<?php echo getImageUrl("product", $item['image']) ?>" height="100" alt="">
+                                                <h5><?= $item['name'] ?></h5>
+                                            </td>
+                                            <td class="shoping__cart__price">
+                                                $<?= $item['unit_price'] ?>
+                                            </td>
+                                            <td class="shoping__cart__quantity">
+                                                <div class="quantity">
+                                                    <div class="pro-qty">
+                                                        <input type="text" value="<?= $item['quantity'] ?>">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="shoping__cart__total">
+                                                $<?= $item['total_price'] ?>
+                                            </td>
+                                            <td class="shoping__cart__item__close">
+                                                <span class="icon_close" data-id="<?= $item['id'] ?>"></span>
+                                            </td>
+                                        </tr>
+
+                                    <?php } ?>
+                                <?php } ?>
                             </tbody>
                         </table>
                     </div>
@@ -144,8 +111,13 @@
                     <div class="shoping__checkout">
                         <h5>Cart Total</h5>
                         <ul>
-                            <li>Subtotal <span>$454.98</span></li>
-                            <li>Total <span>$454.98</span></li>
+                            <li>Subtotal <span>$<?= $grand_total ?></span></li>
+                            <li>Discount <span>10%</span></li>
+                            <li>Total <span>$<?php
+                                                $disc = $grand_total / 10;
+                                                $grand_total = $grand_total - $disc;
+                                                echo $grand_total;
+                                                ?></span></li>
                         </ul>
                         <a href="#" class="primary-btn">PROCEED TO CHECKOUT</a>
                     </div>
@@ -155,14 +127,59 @@
     </section>
     <!-- Shoping Cart Section End -->
 
-   
+
     <!-- footer include -->
     <?php require_once("./includes/footer.php") ?>
 
     <!-- javascript links include -->
     <?php require_once("./includes/javascript-links.php") ?>
 
+    <script>
+        $(document).ready(function() {
+            $(".icon_close").on("click", function(e) {
+                e.preventDefault();
+                let item_id = $(this).data('id');
 
+                Swal.fire({
+                    title: "Do you want to Delete item from cart?",
+                    showDenyButton: true,
+                    confirmButtonText: "Yes, Delete",
+                    denyButtonText: `Don't Delete`
+                }).then((result) => {
+                    /* Read more about isConfirmed, isDenied below */
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "add-to-cart.php",
+                            type: "POST",
+                            data: {
+                                item_id: item_id
+                            },
+                            success: function(response) {
+                                if (response == true) {
+                                    Swal.fire({
+                                        position: "top-center",
+                                        icon: "success",
+                                        title: "Items is successfully deleted from cart",
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then( () => {
+                                        window.location.reload();
+                                    })
+                                }
+
+                            }
+                        })
+
+
+                    } else if (result.isDenied) {
+                        Swal.fire("Okay, not deleted", "", "info");
+                    }
+                });
+
+            })
+        })
+    </script>
 </body>
 
 </html>
